@@ -12,3 +12,5 @@ coverage/
 .nyc_output/
 temp/
 cache/
+# Allow docs folder for GitHub Pages
+!docs/

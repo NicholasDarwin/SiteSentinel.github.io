@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SiteSentinel - Comprehensive website security analysis tool with 60+ checks for SSL/TLS, DNS, performance, SEO, accessibility, and safety.">
+  <meta name="keywords" content="website security, URL analysis, SSL check, DNS security, SEO audit, accessibility check, performance analysis">
+  <meta name="author" content="SiteSentinel">
+  <title>SiteSentinel - Website Security Analysis Platform</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%231f2937'>🔒</text></svg>">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="navbar-brand">
+        <span class="logo">🔒</span>
+        <h1>SiteSentinel</h1>
+      </div>
+      <div class="navbar-links">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#how-it-works" class="nav-link">How It Works</a>
+        <a href="#" class="nav-link">Documentation</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h2>Website Security Analysis Made Simple</h2>
+        <p>Analyze any website across security, performance, SEO, accessibility, and safety metrics with 60+ comprehensive checks.</p>
+        
+        <!-- Search/Input Section -->
+        <div class="search-container">
+          <form id="analysisForm" class="search-form">
+            <div class="input-wrapper">
+              <input 
+                type="url" 
+                id="urlInput" 
+                placeholder="https://example.com" 
+                required
+                class="url-input"
+              >
+              <button type="submit" class="btn btn-primary">
+                Analyze
+              </button>
+            </div>
+            <p class="input-hint">Enter any website URL to get a complete security audit</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results Section -->
+  <section id="resultsSection" class="results-section" style="display: none;">
+    <div class="container">
+      <div class="results-header">
+        <h3>Analysis Results</h3>
+        <p id="analyzedUrl" class="analyzed-url"></p>
+      </div>
+
+      <!-- Overall Score Card -->
+      <div class="overall-score-card">
+        <div class="score-circle">
+          <svg viewBox="0 0 100 100">
+            <circle class="score-bg" cx="50" cy="50" r="45" />
+            <circle class="score-progress" cx="50" cy="50" r="45" id="scoreArc" />
+          </svg>
+          <div class="score-content">
+            <span class="score-number" id="overallScore">0</span>
+            <span class="score-label" id="scoreLabel">Loading</span>
+          </div>
+        </div>
+        <div class="score-details">
+          <h3>Overall Security Score</h3>
+          <p>Your website's comprehensive security and quality rating across 6 major categories.</p>
+          <div class="score-breakdown">
+            <div class="breakdown-item" id="scoreBreakdown"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories Grid -->
+      <div class="categories-grid" id="categoriesGrid"></div>
+
+      <!-- Action Buttons -->
+      <div class="results-actions">
+        <button id="newAnalysisBtn" class="btn btn-secondary">Analyze Another URL</button>
+        <button id="exportBtn" class="btn btn-outline">Export Report</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features-section">
+    <div class="container">
+      <h2>Comprehensive Analysis Features</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">�</div>
+          <h3>Security & HTTPS</h3>
+          <p>SSL/TLS certificates, HSTS headers, CSP policies, and more security headers</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🌐</div>
+          <h3>DNS & Domain</h3>
+          <p>DNS resolution, MX records, SPF, DMARC, and email security configuration</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Performance</h3>
+          <p>Load times, compression, caching, CDN usage, and optimization metrics</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>SEO & Metadata</h3>
+          <p>Meta tags, structured data, Open Graph, canonical URLs, and heading structure</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">♿</div>
+          <h3>Accessibility</h3>
+          <p>WCAG 2.1 compliance, alt text, form labels, aria attributes, and more</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚠️</div>
+          <h3>Safety & Threats</h3>
+          <p>Malware indicators, XSS protection, SQL injection prevention, and bot detection</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="how-it-works-section">
+    <div class="container">
+      <h2>How SiteSentinel Works</h2>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Enter URL</h3>
+          <p>Paste any website URL into the search bar</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>Comprehensive Scan</h3>
+          <p>We run 60+ checks across 6 security categories</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>Detailed Report</h3>
+          <p>Get detailed results with actionable recommendations</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <h3>Export & Share</h3>
+          <p>Download reports or share results with your team</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>SiteSentinel</h4>
+          <p>Professional website security and quality analysis platform.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="https://github.com/NicholasDarwin/SiteSentinel" target="_blank">GitHub</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Learn More</h4>
+          <ul>
+            <li><a href="#">Documentation</a></li>
+            <li><a href="#">API Reference</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 SiteSentinel. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal for detailed check view -->
+  <div id="checkModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="modal-close">&times;</span>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
