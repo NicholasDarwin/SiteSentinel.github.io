@@ -37,7 +37,7 @@ class AccessibilityCheck {
         name: 'Image Alt Text',
         status: images.length === 0 ? 'pass' : imagesWithAlt === images.length ? 'pass' : 'warn',
         description: images.length === 0 ? 'No images' : `${imagesWithAlt}/${images.length} images have alt text`,
-        severity: 'critical'
+        severity: 'medium'
       });
 
       // 3. Form Labels
