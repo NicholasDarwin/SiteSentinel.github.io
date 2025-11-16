@@ -20,6 +20,7 @@ class SafetyCheck {
       // If a Google Safe Browsing API key is provided via env, use it for reliable detection.
       // Otherwise fallback to a local keyword heuristic (prone to false positives).
       const body = response.data ? String(response.data).toLowerCase() : '';
+      const urlLower = url.toLowerCase();
       let malwareDetected = false;
       let detectionDetails = null;
 
@@ -60,6 +61,13 @@ class SafetyCheck {
         if (detectedKeywords.length > 0) {
           malwareDetected = true;
           detectionDetails = `Keyword indicators detected: ${detectedKeywords.join(', ')}`;
+        }
+
+        // Detect phishing redirect/confirmation scams ("click to confirm you are not a bot")
+        const phishingPatterns = /click.*confirm.*not.*bot|click.*verify|confirm.*human|click\.php|redirect\.php|campaign_id|click_id=|zoneid=|_pd=/i;
+        if (phishingPatterns.test(body) || phishingPatterns.test(urlLower)) {
+          malwareDetected = true;
+          detectionDetails = `Phishing redirect scam detected: fake verification/CAPTCHA prompt`;
         }
       }
 

@@ -91,6 +91,17 @@ class SecurityCheck {
         });
       }
 
+      // 9. Redirect/Phishing Scam Detection
+      const hasClickPhishing = response.data ? /click.*confirm.*not.*bot|click.*verify|confirm.*human|robot|captcha/i.test(response.data) : false;
+      const hasScamRedirects = response.data ? /click\.php|redirect\.php|phishing|click_id|campaign_id|cost=|zone/i.test(response.data) : false;
+      const isClickScam = hasClickPhishing || hasScamRedirects;
+      checks.push({
+        name: 'Redirect Scam Detection',
+        status: isClickScam ? 'fail' : 'pass',
+        description: isClickScam ? 'Detected potential phishing redirect or fake verification scam' : 'No phishing redirect patterns detected',
+        severity: 'critical'
+      });
+
     } catch (error) {
       checks.push({
         name: 'Connection Error',
