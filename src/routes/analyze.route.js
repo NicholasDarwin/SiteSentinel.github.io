@@ -62,7 +62,14 @@ router.post('/analyze', async (req, res) => {
     ];
 
     // Calculate overall score
-    const overallScore = calculateOverallScore(categories);
+    let overallScore = calculateOverallScore(categories);
+
+    // If any category reports a confirmed malware detection, force overall score to 0
+    const malwareDetected = categories.some(cat => cat.malwareDetected === true);
+    if (malwareDetected) {
+      overallScore = 0;
+    }
+
     const scoreLabel = getScoreLabel(overallScore);
     const scoreColor = getScoreColor(overallScore);
 

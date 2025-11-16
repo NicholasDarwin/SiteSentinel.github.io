@@ -16,11 +16,57 @@ class SafetyCheck {
         validateStatus: () => true
       });
 
-      // 1. No Blacklist Indicators (basic)
+      // 1. Malware / Phishing Indicators
+      // If a Google Safe Browsing API key is provided via env, use it for reliable detection.
+      // Otherwise fallback to a local keyword heuristic (prone to false positives).
+      const body = response.data ? String(response.data).toLowerCase() : '';
+      let malwareDetected = false;
+      let detectionDetails = null;
+
+      const gsApiKey = process.env.GOOGLE_SAFE_BROWSING_API_KEY;
+      if (gsApiKey) {
+        try {
+          const gsPayload = {
+            client: {
+              clientId: 'sitesentinel',
+              clientVersion: '2.0.0'
+            },
+            threatInfo: {
+              threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE', 'POTENTIALLY_HARMFUL_APPLICATION'],
+              platformTypes: ['ANY_PLATFORM'],
+              threatEntryTypes: ['URL'],
+              threatEntries: [ { url } ]
+            }
+          };
+
+          const gsUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${gsApiKey}`;
+          const gsResp = await axios.post(gsUrl, gsPayload, { timeout: 10000 });
+          if (gsResp.data && Object.keys(gsResp.data).length > 0) {
+            malwareDetected = true;
+            detectionDetails = `Google Safe Browsing match: ${JSON.stringify(gsResp.data)}`;
+          }
+        } catch (err) {
+          // If the Safe Browsing call fails, fall back to keyword heuristics below
+          detectionDetails = `Safe Browsing check failed: ${err.message}`;
+        }
+      }
+
+      if (!malwareDetected) {
+        const malwareKeywords = [
+          'malware', 'virus', 'trojan', 'ransomware', 'phishing', 'infected', 'malicious',
+          'drive-by', 'you have been infected', 'click here to download', 'decrypt', 'scam'
+        ];
+        const detectedKeywords = malwareKeywords.filter(k => body.includes(k));
+        if (detectedKeywords.length > 0) {
+          malwareDetected = true;
+          detectionDetails = `Keyword indicators detected: ${detectedKeywords.join(', ')}`;
+        }
+      }
+
       checks.push({
         name: 'Malware/Phishing Indicators',
-        status: 'info',
-        description: 'Full malware detection requires integration with Google Safe Browsing API',
+        status: malwareDetected ? 'fail' : 'info',
+        description: malwareDetected ? detectionDetails : 'Full malware detection requires integration with Google Safe Browsing API',
         severity: 'critical'
       });
 
@@ -108,11 +154,21 @@ class SafetyCheck {
       });
     }
 
+    // Calculate score and attach malwareDetected flag for the route handler to act on
+    let score = calculateCategoryScore(checks);
+    const malwareCheck = checks.find(c => c.name === 'Malware/Phishing Indicators');
+    const malwareFlag = !!(malwareCheck && (malwareCheck.status === 'fail' || malwareCheck.status === 'error'));
+    if (malwareFlag) {
+      // category gets 0
+      score = 0;
+    }
+
     return {
       category: 'Safety & Threats',
       icon: '⚠️',
-      score: calculateCategoryScore(checks),
-      checks
+      score,
+      checks,
+      malwareDetected: malwareFlag
     };
   }
 }
