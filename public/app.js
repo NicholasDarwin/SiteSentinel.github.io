@@ -80,6 +80,13 @@ class SiteSentinelApp {
     this.overallScore.textContent = data.overall.score;
     this.scoreLabel.textContent = data.overall.label;
     
+    // Apply color gradient to overall score circle
+    const scoreColor = this.getScoreColor(data.overall.score);
+    const scoreArc = document.getElementById('scoreArc');
+    if (scoreArc) {
+      scoreArc.style.stroke = scoreColor;
+    }
+    
     // Update URL
     this.analyzedUrl.textContent = data.url;
 
@@ -158,11 +165,20 @@ class SiteSentinelApp {
   }
 
   getScoreColor(score) {
-    if (score >= 90) return '#10b981'; // green
-    if (score >= 75) return '#3b82f6'; // blue
-    if (score >= 60) return '#f59e0b'; // amber
-    if (score >= 45) return '#ef4444'; // red
-    return '#dc2626'; // dark red
+    // Smooth gradient: green (100) -> yellow (50) -> red (0)
+    if (score >= 50) {
+      // Green to Yellow: 50-100
+      const ratio = (score - 50) / 50; // 0 to 1
+      const r = Math.round(16 + ratio * 239); // #10 to #ff (16 to 255)
+      const g = Math.round(200 - ratio * 50); // #c8 to #78
+      return `rgb(${r}, ${g}, 0)`;
+    } else {
+      // Yellow to Red: 0-50
+      const ratio = score / 50; // 0 to 1
+      const r = 255; // constant red
+      const g = Math.round(165 - ratio * 65); // #a5 to #64
+      return `rgb(${r}, ${g}, 0)`;
+    }
   }
 
   getScoreLabel(score) {
