@@ -165,11 +165,17 @@ class SiteSentinelApp {
   }
 
   getScoreColor(score) {
-    // Smooth gradient: green (100) -> yellow (50) -> red (25 and below)
-    if (score >= 50) {
-      // Green to Yellow: 50-100
-      const ratio = (score - 50) / 50; // 0 to 1
-      const r = Math.round(16 + ratio * 239); // #10 to #ff (16 to 255)
+    // Smooth gradient: green (75+) -> yellow (50-75) -> orange (25-50) -> red (0-25)
+    if (score >= 75) {
+      // Green: 75-100
+      const ratio = (score - 75) / 25; // 0 to 1
+      const r = Math.round(16 + ratio * 56); // #10 to #48
+      const g = Math.round(184 + ratio * 16); // #b8 to #d0
+      return `rgb(${r}, ${g}, 0)`;
+    } else if (score >= 50) {
+      // Green to Yellow: 50-75
+      const ratio = (score - 50) / 25; // 0 to 1
+      const r = Math.round(16 + ratio * 239); // #10 to #ff
       const g = Math.round(200 - ratio * 50); // #c8 to #78
       return `rgb(${r}, ${g}, 0)`;
     } else if (score >= 25) {
