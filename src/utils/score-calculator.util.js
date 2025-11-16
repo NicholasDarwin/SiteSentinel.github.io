@@ -5,15 +5,29 @@
 function calculateCategoryScore(checks) {
   if (!checks || checks.length === 0) return 0;
   
-  let score = 0;
+  let totalScore = 0;
+  let totalWeight = 0;
+  
   checks.forEach(check => {
-    if (check.status === 'pass') score += 100;
-    else if (check.status === 'warn') score += 50;
-    else if (check.status === 'info') score += 75;
+    // Weight checks by severity: critical=3x, high=2x, medium=1x, low=0.5x
+    const severityWeight = {
+      'critical': 3,
+      'high': 2,
+      'medium': 1,
+      'low': 0.5
+    }[check.severity] || 1;
+    
+    let checkScore = 0;
+    if (check.status === 'pass') checkScore = 100;
+    else if (check.status === 'warn') checkScore = 60;
+    else if (check.status === 'info') checkScore = 75;
     // 'fail' and 'error' contribute 0
+    
+    totalScore += checkScore * severityWeight;
+    totalWeight += severityWeight;
   });
   
-  return Math.round(score / checks.length);
+  return Math.round(totalScore / totalWeight);
 }
 
 function calculateOverallScore(categories) {

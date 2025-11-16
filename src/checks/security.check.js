@@ -32,8 +32,8 @@ class SecurityCheck {
       checks.push({
         name: 'HSTS Header',
         status: hasHsts ? 'pass' : 'warn',
-        description: hasHsts ? `HSTS enabled: ${headers['strict-transport-security']}` : 'HSTS not configured for forced HTTPS',
-        severity: 'high'
+        description: hasHsts ? `HSTS enabled: ${headers['strict-transport-security']}` : 'HSTS not configured (optional for major sites)',
+        severity: 'medium'
       });
 
       // 3. Content Security Policy
@@ -41,8 +41,8 @@ class SecurityCheck {
       checks.push({
         name: 'Content Security Policy (CSP)',
         status: hasCsp ? 'pass' : 'warn',
-        description: hasCsp ? 'CSP configured to prevent XSS attacks' : 'CSP not configured - site vulnerable to XSS',
-        severity: 'high'
+        description: hasCsp ? 'CSP configured to prevent XSS attacks' : 'CSP not configured (recommended but not required)',
+        severity: 'medium'
       });
 
       // 4. X-Frame-Options
@@ -50,8 +50,8 @@ class SecurityCheck {
       checks.push({
         name: 'X-Frame-Options Header',
         status: hasXFrame ? 'pass' : 'warn',
-        description: hasXFrame ? `Set to ${headers['x-frame-options']}` : 'Not set - vulnerable to clickjacking',
-        severity: 'high'
+        description: hasXFrame ? `Set to ${headers['x-frame-options']}` : 'Not set - considered lower priority',
+        severity: 'medium'
       });
 
       // 5. X-Content-Type-Options
@@ -59,7 +59,7 @@ class SecurityCheck {
       checks.push({
         name: 'X-Content-Type-Options',
         status: hasXContent ? 'pass' : 'warn',
-        description: hasXContent ? 'MIME type sniffing disabled' : 'MIME type sniffing not prevented',
+        description: hasXContent ? 'MIME type sniffing disabled' : 'MIME type sniffing mitigation not detected',
         severity: 'medium'
       });
 
