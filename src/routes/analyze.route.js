@@ -19,6 +19,7 @@ const logger = require('../utils/logger.util');
  * Analyze a given URL across all security, performance, and quality metrics
  */
 router.post('/analyze', async (req, res) => {
+  let validatedUrl = null;
   try {
     const { url } = req.body;
 
@@ -31,7 +32,7 @@ router.post('/analyze', async (req, res) => {
     }
 
     // Validate URL format
-    const validatedUrl = validateUrl(url);
+    validatedUrl = validateUrl(url);
     if (!validatedUrl) {
       return res.status(400).json({ 
         error: 'Invalid URL format. Please provide a valid HTTP or HTTPS URL.',
@@ -44,7 +45,9 @@ router.post('/analyze', async (req, res) => {
     // Helper to safely wrap check execution
     const safeCheck = async (checkFn, checkName, fallbackIcon) => {
       try {
+        logger.debug(`Starting check: ${checkName}`);
         const result = await checkFn;
+        logger.debug(`Completed check: ${checkName}`, { score: result?.score });
         // Ensure result is valid
         if (!result || typeof result !== 'object' || !('score' in result)) {
           logger.warn(`${checkName} returned invalid result:`, result);
@@ -52,11 +55,12 @@ router.post('/analyze', async (req, res) => {
         }
         return result;
       } catch (err) {
-        logger.error(`${checkName} error:`, err);
+        logger.error(`${checkName} error:`, err?.message || String(err));
         return { category: checkName, icon: fallbackIcon, score: 0, checks: [{ name: 'Error', status: 'error', description: String(err?.message || err || 'Unknown error'), severity: 'critical' }] };
       }
     };
 
+    logger.debug('Starting parallel checks execution');
     // Run all checks in parallel for better performance
     const [security, dns, performance, seo, accessibility, safety] = await Promise.all([
       safeCheck(new SecurityCheck().analyze(validatedUrl), 'Security & HTTPS', '🔒'),
@@ -66,6 +70,7 @@ router.post('/analyze', async (req, res) => {
       safeCheck(new AccessibilityCheck().analyze(validatedUrl), 'Accessibility', '♿'),
       safeCheck(new SafetyCheck().analyze(validatedUrl), 'Safety & Threats', '⚠️')
     ]);
+    logger.debug('All parallel checks completed');
 
     // Compile all categories
     const categories = [
