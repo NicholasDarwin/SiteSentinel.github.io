@@ -53,27 +53,11 @@ class SafetyCheck {
       }
 
       if (!malwareDetected) {
-        const malwareKeywords = [
-          'malware', 'virus', 'trojan', 'ransomware', 'phishing', 'infected', 'malicious',
-          'drive-by', 'you have been infected', 'click here to download', 'decrypt', 'scam'
-        ];
-        const detectedKeywords = malwareKeywords.filter(k => body.includes(k));
-        if (detectedKeywords.length > 0) {
-          malwareDetected = true;
-          detectionDetails = `Keyword indicators detected: ${detectedKeywords.join(', ')}`;
-        }
-
-        // Detect phishing redirect/confirmation scams
-        // List of known malicious domains from user's examples
-        const knownMaliciousDomains = [
-          'durframet', 'chroelhome', 'defulated', 'phosolica', 'flianial', 
-          'bitaxiers', 'kxkxgw', 'nwqgrv', 'sitesentinel-phishing'
-        ];
-        const isMaliciousDomain = knownMaliciousDomains.some(domain => urlLower.includes(domain));
+        // Check for phishing indicators in URL structure and domain reputation
+        malwareDetected = this.detectPhishingIndicators(url, hostname);
         
-        if (isMaliciousDomain) {
-          malwareDetected = true;
-          detectionDetails = `Phishing redirect scam detected: known malicious domain`;
+        if (malwareDetected) {
+          detectionDetails = `Phishing/scam indicators detected in domain structure or redirect patterns`;
         }
       }
 
@@ -184,6 +168,69 @@ class SafetyCheck {
       checks,
       malwareDetected: malwareFlag
     };
+  }
+
+  /**
+   * Better phishing detection based on domain structure and URL patterns
+   * Instead of keyword matching, looks at domain reputation indicators
+   */
+  detectPhishingIndicators(url, hostname) {
+    const urlLower = url.toLowerCase();
+    const decodedUrl = decodeURIComponent(urlLower);
+    
+    // 1. Check for obfuscated/encoded payloads in URL path or query
+    // This includes base64, URL-encoded, or other suspicious patterns
+    if (/\/[A-Za-z0-9+/]{50,}={0,2}($|\?|\/)/i.test(urlLower) ||  // Long base64 in path
+        /\/[A-Za-z0-9+/]{50,}={0,2}($|\?|\/)/i.test(decodedUrl) ||
+        /[?&][a-zA-Z0-9_-]+=([A-Za-z0-9+/]{50,}={0,2})($|&|%)/i.test(urlLower) || // Base64 in query
+        /[?&][a-zA-Z0-9_-]+=([A-Za-z0-9+/]{50,}={0,2})($|&)/i.test(decodedUrl)) {
+      return true;
+    }
+
+    // 2. Check for suspicious URL patterns
+    const suspiciousPatterns = [
+      /^https?:\/\/[a-z0-9]+\.[a-z0-9]+\.click\//i, // Click redirect domains
+      /^https?:\/\/[a-z0-9]+\.[a-z0-9]+\.download\//i, // Download redirect domains
+      /[?&](click_id|cid|zoneid|landing_id|_pd|mcount|spayout)/i, // Tracking/redirect parameters
+      /verify|confirm|update.*password|urgent.*action|claim.*reward|click.*verify/i, // Phishing keywords in URL
+      /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/, // IP addresses instead of domain names
+    ];
+    
+    for (const pattern of suspiciousPatterns) {
+      if (pattern.test(urlLower)) {
+        return true;
+      }
+    }
+
+    // 3. Check for typosquatting patterns (common misspellings of major sites)
+    const typosquattingPatterns = [
+      /goog+le/i, /faceb+ook/i, /amazo+n/i, /microso+ft/i, 
+      /paypa+l/i, /twit+ter/i, /linkedI+n/i, /instag+ram/i
+    ];
+    
+    for (const pattern of typosquattingPatterns) {
+      if (pattern.test(hostname) && !hostname.includes('google.com') && 
+          !hostname.includes('facebook.com') && !hostname.includes('amazon.com') &&
+          !hostname.includes('microsoft.com') && !hostname.includes('paypal.com') &&
+          !hostname.includes('twitter.com') && !hostname.includes('linkedin.com') &&
+          !hostname.includes('instagram.com')) {
+        return true;
+      }
+    }
+
+    // 4. Check for suspicious domain age indicators (new domains with common names)
+    // Domains with numbers replacing letters (l33t speak)
+    if (/[a-z0-9]*[0-9]{2,}[a-z0-9]*\.(click|download|stream|app|site)$/i.test(hostname)) {
+      return true;
+    }
+
+    // 5. Check for suspicious redirect/shortened URLs with tracking
+    if (urlLower.includes('/redirect?') || urlLower.includes('/click?') || 
+        urlLower.includes('/out?') || urlLower.includes('/go?')) {
+      return true;
+    }
+
+    return false;
   }
 }
 
