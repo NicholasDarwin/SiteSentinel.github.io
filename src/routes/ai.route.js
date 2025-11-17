@@ -15,6 +15,81 @@ router.get('/enabled', (req, res) => {
 });
 
 /**
+ * POST /api/ai/quick-assessment
+ * Body: { report: <SiteSentinel JSON>, url?: string }
+ * Returns: { score: 0-100, message: string }
+ */
+router.post('/quick-assessment', async (req, res) => {
+  try {
+    if (!ENABLE_AI) {
+      return res.status(403).json({ error: 'AI disabled on server' });
+    }
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: 'Missing OPENAI_API_KEY' });
+    }
+
+    const { report, url } = req.body || {};
+    if (!report || typeof report !== 'object') {
+      return res.status(400).json({ error: 'Missing or invalid report JSON' });
+    }
+
+    const systemPrompt = [
+      'You are SiteSentinel AI Security Auditor.',
+      'Given a website analysis report, provide:',
+      '1. A security score (0-100, where 100 = perfect security)',
+      '2. A 1-2 sentence summary of the site\'s security posture',
+      'Consider: vulnerabilities, missing headers, malware/phishing indicators, SSL issues, DNS problems.',
+      'Format response EXACTLY as JSON: {"score": <number>, "message": "<string>"}',
+      'Be direct and specific. Prioritize critical issues.',
+    ].join('\n');
+
+    const safeReport = JSON.stringify(report);
+    const limitedReport = safeReport.length > 100000 ? safeReport.slice(0, 100000) + '...<truncated>' : safeReport;
+
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      {
+        role: 'user',
+        content: `URL: ${url || report.url || 'unknown'}\n\nReport JSON:\n${limitedReport}\n\nProvide your assessment as JSON.`
+      }
+    ];
+
+    const resp = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-5',
+        temperature: 0.3,
+        messages,
+        response_format: { type: 'json_object' }
+      },
+      {
+        timeout: 20000,
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const content = resp?.data?.choices?.[0]?.message?.content?.trim() || '{}';
+    let parsed;
+    try {
+      parsed = JSON.parse(content);
+    } catch (e) {
+      parsed = { score: 50, message: 'Unable to parse AI assessment.' };
+    }
+
+    const score = typeof parsed.score === 'number' ? Math.max(0, Math.min(100, parsed.score)) : 50;
+    const message = typeof parsed.message === 'string' ? parsed.message : 'AI assessment unavailable.';
+
+    res.json({ score, message });
+  } catch (err) {
+    logger.error('AI quick assessment error:', err?.response?.data || err?.message || err);
+    res.json({ score: 50, message: 'AI assessment temporarily unavailable.' });
+  }
+});
+
+/**
  * POST /api/ai/security-insights
  * Body: { report: <SiteSentinel JSON>, question?: string, url?: string }
  */

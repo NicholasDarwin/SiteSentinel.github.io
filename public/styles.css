@@ -412,6 +412,62 @@ body {
   color: white;
 }
 
+/* AI Assessment Card */
+.ai-assessment-card {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  padding: 24px 32px;
+  border-radius: 12px;
+  margin-bottom: 32px;
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 20px;
+  align-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.ai-badge {
+  font-size: 0.85em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.9;
+  grid-column: 1 / -1;
+  margin-bottom: -8px;
+}
+
+.ai-score-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 16px 24px;
+  border-radius: 10px;
+  min-width: 140px;
+}
+
+.ai-score-label {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.ai-score-value {
+  font-size: 2.2em;
+  font-weight: 700;
+  color: #fff;
+}
+
+.ai-message {
+  font-size: 1.05em;
+  line-height: 1.5;
+  opacity: 0.95;
+  padding: 8px 0;
+}
+
 /* Categories Grid */
 .categories-grid {
   display: grid;

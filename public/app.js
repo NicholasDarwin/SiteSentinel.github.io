@@ -19,6 +19,10 @@ class SiteSentinelApp {
     this.aiQuestion = document.getElementById('aiQuestion');
     this.aiAskBtn = document.getElementById('aiAskBtn');
     this.aiAnswer = document.getElementById('aiAnswer');
+    // AI assessment elements
+    this.aiAssessmentCard = document.getElementById('aiAssessmentCard');
+    this.aiScore = document.getElementById('aiScore');
+    this.aiMessage = document.getElementById('aiMessage');
     
     this.analysisData = null;
     this.bindEvents();
@@ -106,6 +110,11 @@ class SiteSentinelApp {
 
       this.analysisData = data;
       this.displayResults(data);
+      
+      // Get AI quick assessment if enabled
+      if (this.aiCapable) {
+        this.getAIAssessment(data);
+      }
     } catch (error) {
       alert(`Error: ${error.message}`);
       console.error('Analysis error:', error);
@@ -280,6 +289,10 @@ class SiteSentinelApp {
     this.resultsSection.style.display = 'none';
     this.categoriesGrid.innerHTML = '';
     this.toggleAIVisibility(false);
+    // Hide AI assessment
+    if (this.aiAssessmentCard) {
+      this.aiAssessmentCard.style.display = 'none';
+    }
   }
 
   exportReport() {
@@ -372,6 +385,36 @@ Overall Score: ${data.overall.score}/100 (${data.overall.label})
       if (this.aiAnswer) this.aiAnswer.textContent = j?.answer || j?.error || 'No answer.';
     } catch (e) {
       if (this.aiAnswer) this.aiAnswer.textContent = 'Error contacting AI service.';
+    }
+  }
+
+  async getAIAssessment(data) {
+    if (!this.aiAssessmentCard || !this.aiCapable) return;
+    
+    // Show card with loading state
+    this.aiAssessmentCard.style.display = 'block';
+    if (this.aiScore) this.aiScore.textContent = '--';
+    if (this.aiMessage) this.aiMessage.textContent = 'Analyzing security posture...';
+    
+    try {
+      const r = await fetch('/api/ai/quick-assessment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ report: data, url: data?.url })
+      });
+      const j = await r.json();
+      
+      if (j?.score !== undefined && j?.message) {
+        if (this.aiScore) {
+          this.aiScore.textContent = `${j.score}/100`;
+          // Color based on score
+          const color = this.getScoreColor(j.score);
+          this.aiScore.style.color = color;
+        }
+        if (this.aiMessage) this.aiMessage.textContent = j.message;
+      }
+    } catch (e) {
+      if (this.aiMessage) this.aiMessage.textContent = 'AI assessment unavailable.';
     }
   }
 }
