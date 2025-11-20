@@ -108,61 +108,148 @@ body {
 .feature-icon img { width:48px; height:48px; display:block; }
 
 /* Page-specific styling to keep main page visuals unchanged */
+
+/* Professional hero section */
+.page-features .pro-hero {
+  text-align: center;
+  padding: 60px 20px 40px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.page-features .pro-hero h1 {
+  font-size: 2.5em;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--primary-color);
+}
+
+.page-features .pro-hero .lead {
+  font-size: 1.2em;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Features showcase grid */
+.page-features .features-showcase {
+  padding: 40px 20px;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+}
+
 .page-features .feature-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 32px;
-  margin: 40px 0;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 .page-features .feature-item {
   text-align: center;
-  padding: 24px;
+  transition: transform 0.2s ease;
+}
+
+.page-features .feature-item:hover {
+  transform: translateY(-4px);
 }
 
 .page-features .feature-circle {
-  width: 80px;
-  height: 80px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 16px;
-  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 0 auto 20px;
+  box-shadow: 0 8px 24px rgba(30, 64, 175, 0.15);
+  transition: box-shadow 0.3s ease;
 }
 
 .page-features .feature-item:hover .feature-circle {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(30, 64, 175, 0.15);
+  box-shadow: 0 12px 32px rgba(30, 64, 175, 0.25);
 }
 
 .page-features .feature-circle img {
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 .page-features .feature-item h3 {
-  font-size: 1.2em;
+  font-size: 1.25em;
   margin-bottom: 8px;
   color: var(--text-primary);
+  font-weight: 600;
 }
 
 .page-features .feature-item p {
-  font-size: 0.95em;
-  line-height: 1.6;
+  font-size: 0.9em;
+  line-height: 1.5;
   color: var(--text-secondary);
 }
 
-/* Remove old feature-card styles for features page */
-.page-features .feature-card img {
-  display: none;
+/* Features details section */
+.page-features .features-details {
+  max-width: 900px;
+  margin: 60px auto;
+  padding: 0 20px;
 }
 
-.page-features .feature-card h3 {
-  margin-top: 0;
+.page-features .detail-row {
+  margin-bottom: 50px;
+}
+
+.page-features .detail-content h2 {
+  font-size: 1.8em;
+  margin-bottom: 12px;
+  color: var(--primary-color);
+}
+
+.page-features .detail-content p {
+  font-size: 1.05em;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+/* CTA section */
+.page-features .cta-section {
+  text-align: center;
+  padding: 60px 20px;
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  color: white;
+  margin-top: 40px;
+}
+
+.page-features .cta-section h2 {
+  font-size: 2em;
+  margin-bottom: 12px;
+}
+
+.page-features .cta-section p {
+  font-size: 1.1em;
+  margin-bottom: 24px;
+  opacity: 0.95;
+}
+
+.page-features .cta-button {
+  display: inline-block;
+  padding: 14px 32px;
+  background: white;
+  color: var(--primary-color);
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.1em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.page-features .cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* About page: slightly smaller brand logo to keep the header compact */
