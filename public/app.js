@@ -194,6 +194,9 @@ class SiteSentinelApp {
     const scoreColor = this.getScoreColor(category.score);
     const checks = category.checks || [];
     
+    // Special handling for Link Analysis category
+    const isLinkAnalysis = category.category === 'Link Analysis';
+    
     card.innerHTML = `
       <div class="category-card-header">
         <div class="category-icon">${category.icon || '❓'}</div>
@@ -209,6 +212,7 @@ class SiteSentinelApp {
         <ul class="check-list">
           ${category.checks.map(check => this.createCheckItem(check)).join('')}
         </ul>
+        ${isLinkAnalysis && category.linkDetails ? this.createLinkAnalysisChart(category.linkDetails) : ''}
       </div>
     `;
 
@@ -223,6 +227,51 @@ class SiteSentinelApp {
     card.classList.add('expanded');
 
     return card;
+  }
+
+  createLinkAnalysisChart(linkDetails) {
+    if (!linkDetails || !linkDetails.length) return '';
+    
+    return `
+      <div class="link-analysis-chart">
+        <h4>Analyzed External Links</h4>
+        <div class="link-chart-container">
+          ${linkDetails.map(link => `
+            <div class="link-chart-item ${link.status}">
+              <div class="link-url">
+                <span class="link-status-icon">${this.getLinkStatusIcon(link.status)}</span>
+                <a href="${link.url}" target="_blank" rel="noopener noreferrer">${this.truncateUrl(link.url)}</a>
+              </div>
+              <div class="link-details">
+                <span class="link-score" style="background: ${this.getScoreColor(link.score)}">${link.score}/100</span>
+                <span class="link-status-text">${link.statusText}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  getLinkStatusIcon(status) {
+    const icons = {
+      safe: '✅',
+      warning: '⚠️',
+      suspicious: '🚨',
+      error: '❌'
+    };
+    return icons[status] || '•';
+  }
+
+  truncateUrl(url) {
+    try {
+      const urlObj = new URL(url);
+      const domain = urlObj.hostname;
+      const path = urlObj.pathname.substring(0, 30);
+      return domain + (urlObj.pathname.length > 30 ? path + '...' : urlObj.pathname);
+    } catch {
+      return url.length > 50 ? url.substring(0, 50) + '...' : url;
+    }
   }
 
   createCheckItem(check) {

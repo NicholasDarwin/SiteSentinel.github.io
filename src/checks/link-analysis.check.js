@@ -85,6 +85,9 @@ class LinkAnalysisCheck {
         }
       });
 
+      // Store detailed link analysis for chart display
+      const linkDetails = [];
+
       // Check links for suspicious patterns and redirects
       for (const link of links.slice(0, 20)) { // Check first 20 links only
         try {
@@ -92,36 +95,21 @@ class LinkAnalysisCheck {
           const linkHostname = new URL(link).hostname;
           
           if (linkHostname !== hostname) {
-            // Check for suspicious redirect patterns
-            if (this.isRedirectLink(link)) {
+            // Analyze this external link
+            const linkAnalysis = await this.analyzeExternalLink(link, url);
+            linkDetails.push(linkAnalysis);
+            
+            // Track redirects and suspicious links
+            if (linkAnalysis.isRedirect) {
               redirectLinks.push(link);
-              
-              // Try to detect redirect destination
-              try {
-                const redirectResponse = await axios.head(link, {
-                  timeout: 5000,
-                  maxRedirects: 0,
-                  validateStatus: () => true
-                });
-
-                const location = redirectResponse.headers.location;
-                if (location && this.isSuspiciousDomain(location)) {
-                  suspiciousLinks.push({
-                    source: link,
-                    redirectTo: location,
-                    reason: 'Redirects to suspicious domain'
-                  });
-                }
-              } catch (e) {
-                // If HEAD fails, might still be suspicious
-                if (this.isSuspiciousDomain(link)) {
-                  suspiciousLinks.push({
-                    source: link,
-                    redirectTo: 'Unknown',
-                    reason: 'Suspicious redirect pattern'
-                  });
-                }
-              }
+            }
+            
+            if (linkAnalysis.isSuspicious) {
+              suspiciousLinks.push({
+                source: link,
+                redirectTo: linkAnalysis.redirectTo || 'Unknown',
+                reason: linkAnalysis.reason || 'Suspicious domain pattern'
+              });
             }
           }
         } catch (e) {
@@ -171,6 +159,7 @@ class LinkAnalysisCheck {
         icon: '🔗',
         score: calculateCategoryScore(checks),
         checks,
+        linkDetails, // Include detailed link analysis for frontend chart
         suspiciousRedirectsDetected: suspiciousLinks.length > 0
       };
     } catch (error) {
@@ -223,6 +212,82 @@ class LinkAnalysisCheck {
     ];
 
     return suspiciousDomainPatterns.some(pattern => pattern.test(urlLower));
+  }
+
+  async analyzeExternalLink(link, sourceUrl) {
+    const analysis = {
+      url: link,
+      score: 100,
+      status: 'safe',
+      statusText: 'Safe',
+      isRedirect: false,
+      isSuspicious: false,
+      redirectTo: null,
+      reason: null
+    };
+
+    try {
+      // Check if it's a redirect link
+      const isRedirect = this.isRedirectLink(link);
+      analysis.isRedirect = isRedirect;
+
+      // Check for suspicious domain patterns
+      const isSuspicious = this.isSuspiciousDomain(link);
+      
+      if (isSuspicious) {
+        analysis.isSuspicious = true;
+        analysis.score = 20;
+        analysis.status = 'suspicious';
+        analysis.statusText = 'Suspicious Domain';
+        analysis.reason = 'Domain matches suspicious pattern';
+        return analysis;
+      }
+
+      // Try to check redirect destination
+      if (isRedirect) {
+        try {
+          const redirectResponse = await axios.head(link, {
+            timeout: 5000,
+            maxRedirects: 0,
+            validateStatus: () => true
+          });
+
+          const location = redirectResponse.headers.location;
+          if (location) {
+            analysis.redirectTo = location;
+            
+            if (this.isSuspiciousDomain(location)) {
+              analysis.isSuspicious = true;
+              analysis.score = 10;
+              analysis.status = 'suspicious';
+              analysis.statusText = 'Redirects to Suspicious Domain';
+              analysis.reason = 'Redirects to suspicious domain';
+              return analysis;
+            }
+            
+            // Redirect but not suspicious
+            analysis.score = 70;
+            analysis.status = 'warning';
+            analysis.statusText = 'Redirect Link';
+          }
+        } catch (e) {
+          // Can't check redirect, mark as warning
+          analysis.score = 60;
+          analysis.status = 'warning';
+          analysis.statusText = 'Redirect (Unable to Verify)';
+          return analysis;
+        }
+      }
+
+      // Passed all checks
+      return analysis;
+      
+    } catch (error) {
+      analysis.score = 50;
+      analysis.status = 'error';
+      analysis.statusText = 'Analysis Failed';
+      return analysis;
+    }
   }
 }
 
