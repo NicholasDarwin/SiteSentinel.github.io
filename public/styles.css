@@ -108,18 +108,61 @@ body {
 .feature-icon img { width:48px; height:48px; display:block; }
 
 /* Page-specific styling to keep main page visuals unchanged */
-.page-features .feature-card img {
-  width: 56px;
-  height: 56px;
-  border-radius: 8px;
-  background: rgba(15, 23, 42, 0.04);
-  padding: 8px;
-  box-shadow: 0 6px 18px rgba(2,6,23,0.06);
+.page-features .feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 32px;
+  margin: 40px 0;
+}
+
+.page-features .feature-item {
+  text-align: center;
+  padding: 24px;
+}
+
+.page-features .feature-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.page-features .feature-item:hover .feature-circle {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(30, 64, 175, 0.15);
+}
+
+.page-features .feature-circle img {
+  width: 40px;
+  height: 40px;
   object-fit: contain;
 }
 
+.page-features .feature-item h3 {
+  font-size: 1.2em;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.page-features .feature-item p {
+  font-size: 0.95em;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* Remove old feature-card styles for features page */
+.page-features .feature-card img {
+  display: none;
+}
+
 .page-features .feature-card h3 {
-  margin-top: 10px;
+  margin-top: 0;
 }
 
 /* About page: slightly smaller brand logo to keep the header compact */
