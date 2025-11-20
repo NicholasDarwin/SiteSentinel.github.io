@@ -93,9 +93,6 @@ class LinkAnalysisCheck {
         }
       });
 
-      // Remove duplicates from external links
-      const uniqueExternalLinks = [...new Set(externalLinks)];
-
       // Check links for suspicious patterns and redirects
       for (const link of links.slice(0, 20)) { // Check first 20 links only
         try {
@@ -182,7 +179,6 @@ class LinkAnalysisCheck {
         icon: '🔗',
         score: calculateCategoryScore(checks),
         checks,
-        externalLinks: uniqueExternalLinks, // Include list of external links
         suspiciousRedirectsDetected: suspiciousLinks.length > 0
       };
     } catch (error) {

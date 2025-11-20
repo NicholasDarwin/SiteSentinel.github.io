@@ -194,9 +194,9 @@ class SiteSentinelApp {
     const scoreColor = this.getScoreColor(category.score);
     const checks = category.checks || [];
     
-    // Check if this is Link Analysis category with external links
-    const isLinkAnalysis = category.category === 'Link Analysis';
-    const hasExternalLinks = isLinkAnalysis && category.externalLinks && category.externalLinks.length > 0;
+    // Check if this is External Links category
+    const isExternalLinks = category.category === 'External Links';
+    const hasExternalLinks = isExternalLinks && category.externalLinks && category.externalLinks.length > 0;
     
     card.innerHTML = `
       <div class="category-card-header">
