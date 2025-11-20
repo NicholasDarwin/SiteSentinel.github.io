@@ -72,18 +72,29 @@ class LinkAnalysisCheck {
       }
 
       // Extract all links from the page
+      const externalLinks = [];
       $('a[href]').each((i, el) => {
         const href = $(el).attr('href');
-        if (href && !href.startsWith('javascript:') && !href.startsWith('mailto:')) {
+        if (href && !href.startsWith('javascript:') && !href.startsWith('mailto:') && !href.startsWith('#')) {
           try {
             // Convert relative URLs to absolute
             const absoluteUrl = new URL(href, url).href;
+            const linkHostname = new URL(absoluteUrl).hostname;
+            
             links.push(absoluteUrl);
+            
+            // Track external links (different domain)
+            if (linkHostname !== hostname) {
+              externalLinks.push(absoluteUrl);
+            }
           } catch (e) {
             // Skip invalid URLs
           }
         }
       });
+
+      // Remove duplicates from external links
+      const uniqueExternalLinks = [...new Set(externalLinks)];
 
       // Check links for suspicious patterns and redirects
       for (const link of links.slice(0, 20)) { // Check first 20 links only
@@ -171,6 +182,7 @@ class LinkAnalysisCheck {
         icon: '🔗',
         score: calculateCategoryScore(checks),
         checks,
+        externalLinks: uniqueExternalLinks, // Include list of external links
         suspiciousRedirectsDetected: suspiciousLinks.length > 0
       };
     } catch (error) {

@@ -194,6 +194,10 @@ class SiteSentinelApp {
     const scoreColor = this.getScoreColor(category.score);
     const checks = category.checks || [];
     
+    // Check if this is Link Analysis category with external links
+    const isLinkAnalysis = category.category === 'Link Analysis';
+    const hasExternalLinks = isLinkAnalysis && category.externalLinks && category.externalLinks.length > 0;
+    
     card.innerHTML = `
       <div class="category-card-header">
         <div class="category-icon">${category.icon || '❓'}</div>
@@ -209,6 +213,7 @@ class SiteSentinelApp {
         <ul class="check-list">
           ${category.checks.map(check => this.createCheckItem(check)).join('')}
         </ul>
+        ${hasExternalLinks ? this.createExternalLinksSection(category.externalLinks) : ''}
       </div>
     `;
 
@@ -223,6 +228,36 @@ class SiteSentinelApp {
     card.classList.add('expanded');
 
     return card;
+  }
+
+  createExternalLinksSection(externalLinks) {
+    return `
+      <div class="external-links-section">
+        <h4>External Links Found (${externalLinks.length})</h4>
+        <div class="external-links-list">
+          ${externalLinks.map(link => `
+            <div class="external-link-item">
+              <span class="link-icon">🔗</span>
+              <a href="${link}" target="_blank" rel="noopener noreferrer">${this.truncateUrl(link)}</a>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  truncateUrl(url) {
+    try {
+      const urlObj = new URL(url);
+      const domain = urlObj.hostname;
+      const path = urlObj.pathname + urlObj.search;
+      if (path.length > 40) {
+        return domain + path.substring(0, 40) + '...';
+      }
+      return domain + path;
+    } catch {
+      return url.length > 60 ? url.substring(0, 60) + '...' : url;
+    }
   }
 
   createCheckItem(check) {
