@@ -25,20 +25,69 @@
   </nav>
 
   <main class="page container">
-    <h1>Features</h1>
-    <section>
-      <h2>Comprehensive Checks</h2>
-      <p>60+ modular checks covering TLS/SSL, security headers, DNS, performance, SEO, accessibility and safety.</p>
+    <header class="pro-hero">
+      <h1>Comprehensive Website Security & Quality Analysis</h1>
+      <p class="lead">SiteSentinel performs fast, auditable scans that combine deterministic security checks with practical remediation guidance — enabling teams to identify, prioritize, and fix real risks.</p>
+    </header>
+
+    <section class="features-list">
+      <h2>What it checks</h2>
+      <div class="grid">
+        <article class="feature-card">
+          <img src="assets/icons/security.svg" alt="Security"/>
+          <h3>Security & HTTPS</h3>
+          <p>Certificate validity, TLS configuration, HSTS, Content Security Policy (CSP), secure cookie flags, and common header hardening checks.</p>
+        </article>
+
+        <article class="feature-card">
+          <img src="assets/icons/dns.svg" alt="DNS & Domain"/>
+          <h3>DNS & Domain</h3>
+          <p>DNS resolution, authoritative server checks, MX/ SPF/ DMARC evaluation, and domain reputation heuristics.</p>
+        </article>
+
+        <article class="feature-card">
+          <img src="assets/icons/performance.svg" alt="Performance"/>
+          <h3>Performance</h3>
+          <p>Page load metrics, compression, caching headers, and common bottlenecks that affect both UX and security.</p>
+        </article>
+
+        <article class="feature-card">
+          <img src="assets/icons/seo.svg" alt="SEO"/>
+          <h3>SEO & Metadata</h3>
+          <p>Meta tags, structured data, canonical URLs, Open Graph, and best-practice recommendations to improve crawlability.</p>
+        </article>
+
+        <article class="feature-card">
+          <img src="assets/icons/accessibility.svg" alt="Accessibility"/>
+          <h3>Accessibility</h3>
+          <p>WCAG-focused checks such as alt text, form labels, ARIA attributes, and keyboard navigation hints.</p>
+        </article>
+
+        <article class="feature-card">
+          <img src="assets/icons/safety.svg" alt="Safety"/>
+          <h3>Safety & Threats</h3>
+          <p>Phishing indicators, suspicious redirects, known-bad link patterns, and optional Safe Browsing integration.</p>
+        </article>
+      </div>
     </section>
 
-    <section>
-      <h2>AI Insights (optional)</h2>
-      <p>Optional AI-assisted summaries and prioritized remediation steps when enabled.</p>
+    <section class="ai-section">
+      <h2>AI Insights (Optional)</h2>
+      <p class="muted">When enabled, an AI layer synthesizes the full analysis JSON and produces two things: a concise AI assessment score (0–100) and prioritized remediation steps in plain language. AI advice is advisory only — deterministic checks remain the source of truth.</p>
     </section>
 
-    <section>
+    <section class="integrations">
       <h2>Reports & Integrations</h2>
-      <p>Exportable reports, Safe Browsing integration, and simple API endpoints for automation.</p>
+      <ul>
+        <li>Exportable text reports and downloadable summaries for audits.</li>
+        <li>API-first design: integrate scans into CI pipelines or monitoring tools.</li>
+        <li>Optional integrations: Google Safe Browsing, third-party vulnerability feeds.</li>
+      </ul>
+    </section>
+
+    <section class="cta">
+      <h2>Get started</h2>
+      <p>Run a live scan from the homepage to generate an actionable report — or integrate SiteSentinel into your workflow using the <code>POST /api/analyze</code> endpoint.</p>
     </section>
   </main>
 </body>

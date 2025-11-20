@@ -25,14 +25,29 @@
   </nav>
 
   <main class="page container">
-    <h1>About SiteSentinel</h1>
-    <p>SiteSentinel is a modular, extensible web analysis platform built to help teams find and fix real-world vulnerabilities quickly. It combines deterministic checks with optional AI-driven insights.</p>
-    <h2>Tech</h2>
-    <ul>
-      <li>Node.js + Express backend</li>
-      <li>Checks under `src/checks/` for easy extension</li>
-      <li>Responsive frontend dashboard</li>
-    </ul>
+    <section class="about-hero">
+      <h1>About SiteSentinel</h1>
+      <p class="lead">SiteSentinel is a practical website security and quality analysis platform designed for engineers and security teams. It focuses on delivering fast, auditable results and clear remediation steps so teams can reduce risk quickly.</p>
+    </section>
+
+    <section class="about-content">
+      <h2>Mission</h2>
+      <p>Make security auditing accessible and actionable: provide deterministic checks that are easy to verify and concise guidance that helps teams prioritize and remediate issues.</p>
+
+      <h2>What I built</h2>
+      <ul>
+        <li>Modular scanner with 60+ checks across Security, DNS, Performance, SEO, Accessibility and Safety.</li>
+        <li>Parallelized analysis pipeline for fast scan times and consistent scoring.</li>
+        <li>Clear, exportable reports and an extensible checks framework under <code>src/checks/</code>.</li>
+        <li>Optional AI layer for synthesized insights and prioritized remediation (kept advisory and separate from deterministic scoring).</li>
+      </ul>
+
+      <h2>Tech stack</h2>
+      <p><strong>Backend:</strong> Node.js, Express, Axios for HTTP, Cheerio for HTML parsing. <strong>Frontend:</strong> lightweight responsive dashboard with plain JS and modular components.</p>
+
+      <h2>Contact & Contribution</h2>
+      <p>SiteSentinel is open-source — contributions, issues, and suggestions are welcome on the GitHub repository. For partnership or integration inquiries, open an issue or reach out via the project contact info on GitHub.</p>
+    </section>
   </main>
 </body>
 </html>
