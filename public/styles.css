@@ -1131,8 +1131,8 @@ body {
 .external-link-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 12px 14px;
   background: white;
   border-radius: 6px;
   border: 1px solid #e5e7eb;
@@ -1145,13 +1145,35 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+.external-link-item.safe {
+  border-left: 4px solid #10b981;
+}
+
+.external-link-item.warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.external-link-item.unsafe {
+  border-left: 4px solid #ef4444;
+}
+
+.external-link-item.broken,
+.external-link-item.unreachable {
+  border-left: 4px solid #dc2626;
+  background: #fef2f2;
+}
+
+.external-link-item.unknown,
+.external-link-item.not-scored {
+  border-left: 4px solid #94a3b8;
+}
+
 .external-link-item .link-icon {
-  font-size: 1em;
-  color: var(--primary-color);
+  font-size: 1.1em;
   flex-shrink: 0;
 }
 
-.external-link-item a {
+.external-link-item .link-url-text {
   color: var(--primary-color);
   text-decoration: none;
   font-size: 0.9em;
@@ -1159,10 +1181,41 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
+  min-width: 0;
 }
 
-.external-link-item a:hover {
+.external-link-item .link-url-text:hover {
   text-decoration: underline;
+}
+
+.link-score-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.link-score-badge .score-value {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 700;
+  color: white;
+  min-width: 36px;
+  text-align: center;
+}
+
+.link-score-badge .score-value.not-scored {
+  background: #94a3b8;
+  color: white;
+}
+
+.link-score-badge .score-status {
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  font-weight: 600;
+  min-width: 80px;
 }
 
 /* Results Actions */

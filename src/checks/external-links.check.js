@@ -177,7 +177,28 @@ class ExternalLinksCheck {
       const allLinks = [...externalLinks, ...dynamicLinks];
       const uniqueExternalLinks = [...new Set(allLinks)];
 
-      // Generate checks
+      // Score each external link (limit to first 50 to avoid timeout)
+      const linksToScore = uniqueExternalLinks.slice(0, 50);
+      const scoredLinks = await Promise.all(
+        linksToScore.map(async (link) => {
+          const score = await this.scoreExternalLink(link);
+          return {
+            url: link,
+            score: score.score,
+            status: score.status,
+            issues: score.issues
+          };
+        })
+      );
+
+      // Add remaining links without scoring if more than 50
+      const remainingLinks = uniqueExternalLinks.slice(50).map(link => ({
+        url: link,
+        score: null,
+        status: 'Not Scored',
+        issues: []
+      }));
+
       checks.push({
         name: 'External Links Detected',
         status: uniqueExternalLinks.length === 0 ? 'info' : 'pass',
@@ -205,13 +226,27 @@ class ExternalLinksCheck {
         severity: 'low'
       });
 
+      // Security check on scored links
+      const lowScoreLinks = scoredLinks.filter(l => l.score !== null && l.score < 50);
+      if (lowScoreLinks.length > 0) {
+        checks.push({
+          name: 'Potentially Unsafe External Links',
+          status: lowScoreLinks.length > 3 ? 'fail' : 'warn',
+          description: `${lowScoreLinks.length} external link${lowScoreLinks.length !== 1 ? 's have' : ' has'} security concerns`,
+          severity: 'high'
+        });
+      }
+
+      const allScoredLinks = [...scoredLinks, ...remainingLinks];
+
       return {
         category: 'External Links',
         icon: '🌍',
         score: calculateCategoryScore(checks),
         checks,
         externalLinks: uniqueExternalLinks,
-        externalDomains: uniqueDomains
+        externalDomains: uniqueDomains,
+        scoredLinks: allScoredLinks
       };
     } catch (error) {
       checks.push({
@@ -227,7 +262,107 @@ class ExternalLinksCheck {
         score: 0,
         checks,
         externalLinks: [],
-        externalDomains: []
+        externalDomains: [],
+        scoredLinks: []
+      };
+    }
+  }
+
+  async scoreExternalLink(linkUrl) {
+    let score = 100;
+    const issues = [];
+    let status = 'Safe';
+
+    try {
+      // Check URL patterns for suspicious characteristics
+      const urlLower = linkUrl.toLowerCase();
+      
+      // Suspicious TLDs
+      const suspiciousTlds = ['.click', '.loan', '.win', '.download', '.bid', '.racing', '.top', '.stream'];
+      if (suspiciousTlds.some(tld => urlLower.includes(tld))) {
+        score -= 30;
+        issues.push('Suspicious TLD');
+        status = 'Warning';
+      }
+
+      // Redirect/shortener services
+      const redirectServices = ['bit.ly', 'tinyurl', 'goo.gl', 'ow.ly', 'adf.ly', 't.co'];
+      if (redirectServices.some(service => urlLower.includes(service))) {
+        score -= 20;
+        issues.push('URL Shortener');
+        status = 'Warning';
+      }
+
+      // IP address in URL
+      if (/https?:\/\/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(linkUrl)) {
+        score -= 25;
+        issues.push('Direct IP Address');
+        status = 'Warning';
+      }
+
+      // Long subdomain (common in phishing)
+      try {
+        const hostname = new URL(linkUrl).hostname;
+        const parts = hostname.split('.');
+        if (parts.length > 4) {
+          score -= 15;
+          issues.push('Multiple Subdomains');
+        }
+      } catch (e) {}
+
+      // Try to check if URL is accessible
+      try {
+        const response = await axios.head(linkUrl, {
+          timeout: 5000,
+          maxRedirects: 0,
+          validateStatus: () => true
+        });
+
+        if (response.status === 404) {
+          score -= 40;
+          issues.push('Link Not Found (404)');
+          status = 'Broken';
+        } else if (response.status >= 500) {
+          score -= 20;
+          issues.push('Server Error');
+          status = 'Warning';
+        } else if (response.status >= 300 && response.status < 400) {
+          score -= 10;
+          issues.push('Redirects');
+        }
+
+        // Check for HTTPS
+        if (!linkUrl.startsWith('https://')) {
+          score -= 15;
+          issues.push('No HTTPS');
+          status = 'Warning';
+        }
+      } catch (error) {
+        // Connection issues
+        score -= 30;
+        issues.push('Cannot Connect');
+        status = 'Unreachable';
+      }
+
+      // Determine final status
+      if (score < 40) {
+        status = 'Unsafe';
+      } else if (score < 70) {
+        status = 'Warning';
+      } else {
+        status = 'Safe';
+      }
+
+      return {
+        score: Math.max(0, Math.min(100, score)),
+        status,
+        issues
+      };
+    } catch (error) {
+      return {
+        score: 50,
+        status: 'Unknown',
+        issues: ['Analysis Error']
       };
     }
   }

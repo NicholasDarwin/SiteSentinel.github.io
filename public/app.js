@@ -196,7 +196,7 @@ class SiteSentinelApp {
     
     // Check if this is External Links category
     const isExternalLinks = category.category === 'External Links';
-    const hasExternalLinks = isExternalLinks && category.externalLinks && category.externalLinks.length > 0;
+    const hasExternalLinks = isExternalLinks && category.scoredLinks && category.scoredLinks.length > 0;
     
     card.innerHTML = `
       <div class="category-card-header">
@@ -213,7 +213,7 @@ class SiteSentinelApp {
         <ul class="check-list">
           ${category.checks.map(check => this.createCheckItem(check)).join('')}
         </ul>
-        ${hasExternalLinks ? this.createExternalLinksSection(category.externalLinks) : ''}
+        ${hasExternalLinks ? this.createExternalLinksSection(category.scoredLinks) : ''}
       </div>
     `;
 
@@ -236,14 +236,35 @@ class SiteSentinelApp {
         <h4>External Links Found (${externalLinks.length})</h4>
         <div class="external-links-list">
           ${externalLinks.map(link => `
-            <div class="external-link-item">
-              <span class="link-icon">🔗</span>
-              <a href="${link}" target="_blank" rel="noopener noreferrer">${this.truncateUrl(link)}</a>
+            <div class="external-link-item ${this.getLinkStatusClass(link.status)}">
+              <span class="link-icon">${this.getLinkStatusIcon(link.status)}</span>
+              <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="link-url-text">${this.truncateUrl(link.url)}</a>
+              <div class="link-score-badge">
+                ${link.score !== null ? `<span class="score-value" style="background: ${this.getScoreColor(link.score)}">${link.score}</span>` : '<span class="score-value not-scored">--</span>'}
+                <span class="score-status">${link.status}</span>
+              </div>
             </div>
           `).join('')}
         </div>
       </div>
     `;
+  }
+
+  getLinkStatusIcon(status) {
+    const icons = {
+      'Safe': '✅',
+      'Warning': '⚠️',
+      'Unsafe': '🚨',
+      'Broken': '❌',
+      'Unreachable': '⛔',
+      'Unknown': '❓',
+      'Not Scored': '➖'
+    };
+    return icons[status] || '🔗';
+  }
+
+  getLinkStatusClass(status) {
+    return status.toLowerCase().replace(/\s+/g, '-');
   }
 
   truncateUrl(url) {
