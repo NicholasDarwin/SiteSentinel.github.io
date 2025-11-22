@@ -1590,15 +1590,15 @@ body {
 
 .recent-experiences-section {
   padding: 80px 0;
-  background-color: #000000;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: var(--text-primary);
 }
 
 .recent-experiences-section h2 {
   font-size: 2.5em;
   text-align: center;
   margin-bottom: 50px;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .experiences-grid {
@@ -1608,10 +1608,10 @@ body {
 }
 
 .experience-card {
-  background: #111111;
+  background: #f8fafc;
   padding: 30px;
   border-radius: 12px;
-  border: 1px solid #333;
+  border: 1px solid var(--border-color);
   transition: var(--transition);
 }
 
@@ -1623,7 +1623,7 @@ body {
 .experience-text {
   font-size: 1.1em;
   line-height: 1.6;
-  color: #e5e7eb;
+  color: var(--text-primary);
   margin-bottom: 20px;
   font-style: italic;
 }
@@ -1636,10 +1636,10 @@ body {
 
 .author-name {
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .author-role {
   font-size: 0.9em;
-  color: #9ca3af;
+  color: var(--text-secondary);
 }

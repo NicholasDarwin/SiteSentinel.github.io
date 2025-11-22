@@ -14,10 +14,18 @@ class ExternalLinksCheck {
 
     try {
       // Try to use Puppeteer for dynamic link detection if available
+      // Dynamic link & redirect discovery (Puppeteer)
       let dynamicLinks = [];
+      let redirectLinks = [];
       try {
         const puppeteer = require('puppeteer');
-        dynamicLinks = await this.extractDynamicLinks(url, hostname, puppeteer);
+        const dynamicResult = await this.extractDynamicLinks(url, hostname, puppeteer);
+        if (Array.isArray(dynamicResult)) {
+          dynamicLinks = dynamicResult;
+        } else if (dynamicResult && typeof dynamicResult === 'object') {
+          dynamicLinks = dynamicResult.links || [];
+          redirectLinks = dynamicResult.redirectLinks || [];
+        }
       } catch (puppeteerError) {
         // Puppeteer not available, continue with static analysis only
         console.log('Puppeteer not available, using static analysis only');
@@ -174,7 +182,7 @@ class ExternalLinksCheck {
       });
 
       // Remove duplicates and merge with dynamic links
-      const allLinks = [...externalLinks, ...dynamicLinks];
+      const allLinks = [...externalLinks, ...dynamicLinks, ...redirectLinks];
       const uniqueExternalLinks = [...new Set(allLinks)];
 
       // Score each external link (limit to first 50 to avoid timeout)
@@ -207,6 +215,15 @@ class ExternalLinksCheck {
           : `Found ${uniqueExternalLinks.length} unique external link${uniqueExternalLinks.length !== 1 ? 's' : ''}`,
         severity: 'low'
       });
+
+      if (redirectLinks.length > 0) {
+        checks.push({
+          name: 'Redirect Triggered External Destinations',
+          status: 'warn',
+          description: `Detected ${redirectLinks.length} external navigation${redirectLinks.length !== 1 ? 's' : ''} initiated via scripted redirects / window.location changes`,
+          severity: 'medium'
+        });
+      }
 
       // Check link diversity
       const domains = uniqueExternalLinks.map(link => {
@@ -369,6 +386,7 @@ class ExternalLinksCheck {
 
   async extractDynamicLinks(url, hostname, puppeteer) {
     const dynamicLinks = [];
+    const redirectLinks = new Set();
     let browser = null;
 
     try {
@@ -378,6 +396,31 @@ class ExternalLinksCheck {
       });
 
       const page = await browser.newPage();
+
+      // Instrument redirect/navigation APIs before any script runs
+      await page.evaluateOnNewDocument(() => {
+        window.__redirectLog = [];
+        function log(u) {
+          try { if (u && (u.startsWith('http://') || u.startsWith('https://'))) window.__redirectLog.push(u); } catch(e) {}
+        }
+        const origOpen = window.open;
+        window.open = function(u) { log(u); return origOpen.apply(this, arguments); };
+        ['assign','replace'].forEach(fn => {
+          const orig = window.location[fn];
+          window.location[fn] = function(u) { log(u); return orig.call(window.location, u); };
+        });
+        const hrefDesc = Object.getOwnPropertyDescriptor(Location.prototype, 'href');
+        if (hrefDesc && hrefDesc.set) {
+          Object.defineProperty(window.location, 'href', {
+            set(u){ log(u); return hrefDesc.set.call(window.location, u); },
+            get(){ return hrefDesc.get.call(window.location); }
+          });
+        }
+        const origPush = history.pushState;
+        history.pushState = function(state, title, url){ if (url) log(url.toString()); return origPush.apply(history, arguments); };
+        const origReplace = history.replaceState;
+        history.replaceState = function(state, title, url){ if (url) log(url.toString()); return origReplace.apply(history, arguments); };
+      });
       
       // Track all network requests for external links
       const requestedUrls = new Set();
@@ -391,6 +434,34 @@ class ExternalLinksCheck {
         } catch (e) {
           // Skip invalid URLs
         }
+      });
+
+      // Capture navigation events (frame navigations)
+      page.on('framenavigated', frame => {
+        try {
+          const navUrl = frame.url();
+          const navHost = new URL(navUrl).hostname;
+          if (navHost !== hostname && (navUrl.startsWith('http://') || navUrl.startsWith('https://'))) {
+            redirectLinks.add(navUrl);
+          }
+        } catch(e) {}
+      });
+
+      // Capture explicit redirect response Location headers
+      page.on('response', response => {
+        try {
+          const status = response.status();
+          if (status >= 300 && status < 400) {
+            const headers = response.headers();
+            const loc = headers['location'];
+            if (loc) {
+              let absolute;
+              try { absolute = new URL(loc, response.url()).href; } catch(e) { absolute = loc; }
+              const host = new URL(absolute).hostname;
+              if (host !== hostname) redirectLinks.add(absolute);
+            }
+          }
+        } catch(e) {}
       });
 
       await page.goto(url, { 
@@ -485,8 +556,8 @@ class ExternalLinksCheck {
         });
       });
 
-      // Wait a bit for any dynamic content to load
-      await page.waitForTimeout(2000);
+      // Wait for potential scripted redirects after clicks
+      await page.waitForTimeout(2500);
 
       // Extract links again after clicking
       const afterClickLinks = await page.evaluate((pageHostname) => {
@@ -507,18 +578,27 @@ class ExternalLinksCheck {
 
       dynamicLinks.push(...afterClickLinks);
 
+      // Collect redirect log from instrumented APIs
+      try {
+        const apiRedirects = await page.evaluate(() => Array.isArray(window.__redirectLog) ? window.__redirectLog : []);
+        apiRedirects.forEach(u => redirectLinks.add(u));
+      } catch(e) {}
+
       // Add all network-requested URLs
       dynamicLinks.push(...Array.from(requestedUrls));
 
       await browser.close();
 
-      return [...new Set(dynamicLinks)]; // Remove duplicates
+      return {
+        links: [...new Set(dynamicLinks)],
+        redirectLinks: [...redirectLinks]
+      }; // Remove duplicates, provide redirect list separately
     } catch (error) {
       if (browser) {
         await browser.close();
       }
       console.error('Dynamic link extraction error:', error.message);
-      return dynamicLinks;
+      return { links: [...new Set(dynamicLinks)], redirectLinks: [...redirectLinks] };
     }
   }
 }
